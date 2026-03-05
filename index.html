@@ -1,0 +1,2253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bellezza Tech — Обеденные столы из спеченного камня</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database-compat.js"></script>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent-gold: #fbbf24;
+            --accent-gold-dark: #d97706;
+            --accent-pink: #ec4899;
+            --border-color: #334155;
+            --success: #10b981;
+            --error: #ef4444;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, h5, h6 {
+            font-family: 'Montserrat', sans-serif;
+            font-weight: 600;
+        }
+
+        /* Header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            z-index: 1000;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo img {
+            height: 60px;
+            width: auto;
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .b2b-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            padding: 0.5rem 1rem;
+            background: var(--bg-secondary);
+            border-radius: 50px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .b2b-toggle.active {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+        }
+
+        .b2b-toggle span {
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .toggle-switch {
+            width: 44px;
+            height: 24px;
+            background: var(--border-color);
+            border-radius: 12px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .b2b-toggle.active .toggle-switch {
+            background: var(--bg-primary);
+        }
+
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .b2b-toggle.active .toggle-switch::after {
+            left: 22px;
+        }
+
+        .cart-btn {
+            position: relative;
+            background: none;
+            border: none;
+            cursor: pointer;
+            padding: 0.5rem;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .cart-btn:hover {
+            color: var(--accent-gold);
+        }
+
+        .cart-btn svg {
+            width: 28px;
+            height: 28px;
+        }
+
+        .cart-count {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: var(--accent-pink);
+            color: white;
+            font-size: 0.75rem;
+            font-weight: 600;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hero Section */
+        .hero {
+            margin-top: 80px;
+            padding: 4rem 2rem;
+            text-align: center;
+            background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="none" stroke="%23fbbf24" stroke-width="0.5" opacity="0.1"/></svg>') repeat;
+            background-size: 100px 100px;
+            opacity: 0.3;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .hero h1 {
+            font-size: 3rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--text-primary) 0%, var(--accent-gold) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.5rem;
+            color: var(--accent-pink);
+            margin-bottom: 1.5rem;
+            font-weight: 300;
+        }
+
+        .hero-description {
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        /* About Section */
+        .about-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+        }
+
+        .about-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+            align-items: center;
+        }
+
+        .about-content h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            color: var(--accent-gold);
+        }
+
+        .about-content p {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .about-image {
+            position: relative;
+            border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .about-image img {
+            width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        /* Features Section */
+        .features-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 3rem;
+            position: relative;
+            display: inline-block;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent-gold), transparent);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .feature-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .feature-card:hover {
+            border-color: var(--accent-gold);
+            transform: translateY(-5px);
+        }
+
+        .feature-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, var(--accent-gold), var(--accent-gold-dark));
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .feature-card h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Textures Section */
+        .textures-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+        }
+
+        .textures-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .texture-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+
+        .texture-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--accent-gold);
+            box-shadow: 0 10px 30px rgba(251, 191, 36, 0.2);
+        }
+
+        .texture-card img {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .texture-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            padding: 1.5rem 1rem 1rem;
+        }
+
+        .texture-name {
+            font-weight: 600;
+            font-size: 1rem;
+            color: white;
+        }
+
+        /* Products Section */
+        .products-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+        }
+
+        .product-card {
+            background: var(--bg-card);
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .product-card:hover {
+            border-color: var(--accent-gold);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        }
+
+        .product-image {
+            width: 100%;
+            height: 250px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .product-info {
+            padding: 1.5rem;
+        }
+
+        .product-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .product-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .product-subtitle {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            font-style: italic;
+        }
+
+        .product-number {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--bg-secondary);
+            line-height: 1;
+        }
+
+        .product-specs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+        }
+
+        .spec-item {
+            font-size: 0.875rem;
+        }
+
+        .spec-label {
+            color: var(--text-secondary);
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .spec-value {
+            color: var(--text-primary);
+            font-weight: 500;
+        }
+
+        .product-options {
+            margin-bottom: 1rem;
+        }
+
+        .option-group {
+            margin-bottom: 1rem;
+        }
+
+        .option-label {
+            display: block;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .option-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .option-btn {
+            padding: 0.5rem 1rem;
+            border: 1px solid var(--border-color);
+            background: var(--bg-primary);
+            color: var(--text-secondary);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.3s ease;
+        }
+
+        .option-btn:hover {
+            border-color: var(--accent-gold);
+            color: var(--accent-gold);
+        }
+
+        .option-btn.active {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+            font-weight: 600;
+        }
+
+        .price-display {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .price-current {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .price-original {
+            font-size: 1rem;
+            color: var(--text-secondary);
+            text-decoration: line-through;
+        }
+
+        .price-b2b {
+            display: none;
+            font-size: 0.875rem;
+            color: var(--success);
+            margin-top: 0.25rem;
+        }
+
+        .b2b-mode .price-b2b {
+            display: block;
+        }
+
+        .add-to-cart-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent-gold) 0%, var(--accent-gold-dark) 100%);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .add-to-cart-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+        }
+
+        /* Process Section */
+        .process-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+        }
+
+        .process-steps {
+            display: flex;
+            justify-content: space-between;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .process-step {
+            flex: 1;
+            min-width: 200px;
+            text-align: center;
+            position: relative;
+        }
+
+        .process-step:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -1.5rem;
+            top: 2rem;
+            color: var(--accent-gold);
+            font-size: 1.5rem;
+        }
+
+        .step-number {
+            width: 60px;
+            height: 60px;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin: 0 auto 1rem;
+        }
+
+        .process-step h3 {
+            margin-bottom: 0.5rem;
+            color: var(--text-primary);
+        }
+
+        .process-step p {
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Reviews Section */
+        .reviews-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .reviews-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .review-card {
+            background: var(--bg-card);
+            padding: 2rem;
+            border-radius: 16px;
+            border: 1px solid var(--border-color);
+        }
+
+        .review-stars {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-size: 1.25rem;
+        }
+
+        .review-text {
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+            font-style: italic;
+        }
+
+        .review-author {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .review-date {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* FAQ Section */
+        .faq-section {
+            padding: 4rem 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--bg-secondary);
+        }
+
+        .faq-item {
+            margin-bottom: 1rem;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            width: 100%;
+            padding: 1.5rem;
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-primary);
+            text-align: left;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+        }
+
+        .faq-question:hover {
+            background: var(--bg-primary);
+        }
+
+        .faq-question::after {
+            content: '+';
+            font-size: 1.5rem;
+            color: var(--accent-gold);
+        }
+
+        .faq-item.active .faq-question::after {
+            content: '−';
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            background: var(--bg-primary);
+        }
+
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+        }
+
+        .faq-answer-content {
+            padding: 1.5rem;
+            color: var(--text-secondary);
+        }
+
+        /* Contacts Section */
+        .contacts-section {
+            padding: 4rem 2rem;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .contacts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 4rem;
+        }
+
+        .contact-info h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        .contact-item {
+            margin-bottom: 1.5rem;
+        }
+
+        .contact-item strong {
+            display: block;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+        }
+
+        .contact-item a, .contact-item span {
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 1.125rem;
+        }
+
+        .contact-item a:hover {
+            color: var(--accent-gold);
+        }
+
+        .map-container {
+            width: 100%;
+            height: 400px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid var(--border-color);
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Cart Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            border-radius: 16px;
+            max-width: 600px;
+            width: 100%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.5rem;
+            padding: 0.5rem;
+            transition: color 0.3s ease;
+        }
+
+        .modal-close:hover {
+            color: var(--text-primary);
+        }
+
+        .modal-body {
+            padding: 1.5rem;
+        }
+
+        .cart-items {
+            margin-bottom: 1.5rem;
+        }
+
+        .cart-item {
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            position: relative;
+        }
+
+        .cart-item-image {
+            width: 80px;
+            height: 80px;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .cart-item-options {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .cart-item-price {
+            font-weight: 700;
+            color: var(--accent-gold);
+        }
+
+        .cart-item-remove {
+            position: absolute;
+            top: 0.5rem;
+            right: 0.5rem;
+            background: none;
+            border: none;
+            color: var(--error);
+            cursor: pointer;
+            font-size: 1.25rem;
+            padding: 0.25rem;
+        }
+
+        .cart-summary {
+            border-top: 1px solid var(--border-color);
+            padding-top: 1.5rem;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+            font-size: 0.875rem;
+        }
+
+        .summary-row.total {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            border-top: 1px solid var(--border-color);
+            padding-top: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        .checkout-btn:hover {
+            background: var(--accent-gold-dark);
+        }
+
+        /* Checkout Form */
+        .checkout-form {
+            display: none;
+        }
+
+        .checkout-form.active {
+            display: block;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--accent-gold);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .delivery-options {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .delivery-option {
+            flex: 1;
+            padding: 1rem;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .delivery-option:hover {
+            border-color: var(--accent-gold);
+        }
+
+        .delivery-option.active {
+            border-color: var(--accent-gold);
+            background: rgba(251, 191, 36, 0.1);
+        }
+
+        .delivery-option-title {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .delivery-option-price {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .submit-order-btn {
+            width: 100%;
+            padding: 1rem;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .submit-order-btn:hover:not(:disabled) {
+            background: #059669;
+        }
+
+        .submit-order-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        /* Footer */
+        .footer {
+            background: var(--bg-secondary);
+            padding: 3rem 2rem 2rem;
+            margin-top: 4rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .footer-section h3 {
+            color: var(--accent-gold);
+            margin-bottom: 1rem;
+            font-size: 1.125rem;
+        }
+
+        .footer-section p, .footer-section a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            line-height: 1.8;
+            font-size: 0.875rem;
+        }
+
+        .footer-section a:hover {
+            color: var(--accent-gold);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .social-link {
+            width: 40px;
+            height: 40px;
+            background: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+        }
+
+        .social-link:hover {
+            background: var(--accent-gold);
+            color: var(--bg-primary);
+            border-color: var(--accent-gold);
+        }
+
+        .footer-bottom {
+            max-width: 1400px;
+            margin: 2rem auto 0;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        /* Notification */
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--success);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 3000;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.error {
+            background: var(--error);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-subtitle {
+                font-size: 1.125rem;
+            }
+
+            .products-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .header-content {
+                padding: 1rem;
+            }
+
+            .logo img {
+                height: 40px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .delivery-options {
+                flex-direction: column;
+            }
+
+            .about-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .contacts-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .process-step:not(:last-child)::after {
+                display: none;
+            }
+
+            .process-steps {
+                flex-direction: column;
+            }
+        }
+
+        /* Loading State */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid rgba(255,255,255,.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Smooth scroll */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Section anchors */
+        section {
+            scroll-margin-top: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <img src="https://i.ibb.co/tpWDXKvX/image.png" alt="Bellezza Tech">
+            </div>
+            <div class="header-controls">
+                <div class="b2b-toggle" id="b2bToggle">
+                    <span>B2B режим</span>
+                    <div class="toggle-switch"></div>
+                </div>
+                <button class="cart-btn" id="cartBtn">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    <span class="cart-count" id="cartCount" style="display: none;">0</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="hero">
+        <div class="hero-content">
+            <h1>ОБЕДЕННЫЕ СТОЛЫ</h1>
+            <p class="hero-subtitle">Из спеченного камня</p>
+            <p class="hero-description">
+                Премиальная мебель для современного интерьера. Три технологии столешниц: 
+                фрезерованный МДФ, композитные решения из стекла и монолитный спеченный камень 
+                толщиной 3 мм, 6 мм и 12 мм.
+            </p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <div class="stat-number">13</div>
+                    <div class="stat-label">Моделей</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">3</div>
+                    <div class="stat-label">Технологии</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">19</div>
+                    <div class="stat-label">Текстур камня</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about-section" id="about">
+        <div class="about-grid">
+            <div class="about-content">
+                <h2>О компании</h2>
+                <p>Bellezza Tech — российский производитель премиальной мебели из спеченного камня. Мы объединяем итальянский дизайн с передовыми технологиями обработки материалов.</p>
+                <p>Наши столы создаются для тех, кто ценит качество, долговечность и эстетику. Каждое изделие проходит строгий контроль качества и тестируется на прочность.</p>
+                <p>Производство расположено в Красноярске, доставка осуществляется по всей России.</p>
+            </div>
+            <div class="about-image">
+                <img src="https://kimi-web-img.moonshot.cn/img/ru.stoniture.com/bb61e3b74252e975c124c50af6f0c49614b2bcdd.jpg" alt="Bellezza Tech производство">
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="features-section" id="features">
+        <h2 class="section-title">Преимущества материалов</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">🔥</div>
+                <h3>Термостойкость</h3>
+                <p>Спеченный камень выдерживает температуру до 300°C. Можно ставить горячую посуду без подставок.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💎</div>
+                <h3>Царапиноустойчивость</h3>
+                <p>Твердость по шкале Мооса 6-7 единиц. Камень не царапается ножом и острыми предметами.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🛡️</div>
+                <h3>Химическая стойкость</h3>
+                <p>Устойчив к бытовой химии, кислотам и растворителям. Поверхность не впитывает запахи.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🌊</div>
+                <h3>Влагостойкость</h3>
+                <p>Непористая структура — влага не проникает внутрь. Идеально для кухни и столовой.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">☀️</div>
+                <h3>Устойчивость к выцветанию</h3>
+                <p>Цвет не меняется под воздействием солнечных лучей. Гарантия на покрытие — 24 месяца.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">♻️</div>
+                <h3>Экологичность</h3>
+                <p>Натуральные минеральные компоненты без вредных добавок. Безопасно для дома и семьи.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Textures Section -->
+    <section class="textures-section" id="textures">
+        <h2 class="section-title">Палитра текстур камня</h2>
+        <div class="textures-grid" id="texturesGrid">
+            <!-- Textures will be inserted by JS -->
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="products-section" id="products">
+        <h2 class="section-title">Каталог столов</h2>
+        <div class="products-grid" id="productsGrid">
+            <!-- Products will be inserted by JS -->
+        </div>
+    </section>
+
+    <!-- Process Section -->
+    <section class="process-section" id="process">
+        <h2 class="section-title">Как заказать</h2>
+        <div class="process-steps">
+            <div class="process-step">
+                <div class="step-number">1</div>
+                <h3>Выбор модели</h3>
+                <p>Выберите стол, размер, текстуру камня и уровень исполнения</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">2</div>
+                <h3>Оформление</h3>
+                <p>Добавьте в корзину и заполните контактные данные</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">3</div>
+                <h3>Производство</h3>
+                <p>Изготовление занимает 2-3 недели. Контроль качества на каждом этапе</p>
+            </div>
+            <div class="process-step">
+                <div class="step-number">4</div>
+                <h3>Доставка</h3>
+                <p>Доставка по Красноярску или отправка транспортной компанией</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reviews Section -->
+    <section class="reviews-section" id="reviews">
+        <h2 class="section-title">Отзывы клиентов</h2>
+        <div class="reviews-grid">
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Стол VANITY превзошел все ожидания. Качество камня на высоте, сборка идеальная. Доставили в срок, сборщики профессионалы."</p>
+                <div class="review-author">Александр М.</div>
+                <div class="review-date">Красноярск, декабрь 2024</div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Заказывали для ресторана 8 столов. B2B цены приятно удивили. Камень действительно не царапается, проверяли."</p>
+                <div class="review-author">ООО "ГастроХолл"</div>
+                <div class="review-date">Новосибирск, ноябрь 2024</div>
+            </div>
+            <div class="review-card">
+                <div class="review-stars">★★★★★</div>
+                <p class="review-text">"Выбирали между мрамором и спеченным камнем. Остановились на Bellezza — не пожалели. Легко ухаживать, выглядит дорого."</p>
+                <div class="review-author">Елена К.</div>
+                <div class="review-date">Москва, октябрь 2024</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="faq-section" id="faq">
+        <h2 class="section-title">Частые вопросы</h2>
+        <div class="faq-list">
+            <div class="faq-item">
+                <button class="faq-question">Какой срок производства?</button>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Стандартный срок изготовления — 2-3 недели. В сезон (август-сентябрь) возможно увеличение срока до 4 недель. Срочное изготовление возможно за доплату 20%.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Можно ли заказать индивидуальный размер?</button>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Да, возможно изготовление по вашим размерам. Стоимость рассчитывается индивидуально. Минимальная наценка за нестандарт — 15%.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Как ухаживать за столешницей?</button>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Спеченный камень не требует специального ухода. Достаточно протирать влажной тканью с мягким моющим средством. Избегайте абразивных порошков и жестких губок.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Есть ли гарантия?</button>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Да, гарантия на конструкцию и покрытие — 24 месяца. Гарантия распространяется на заводские дефекты. Механические повреждения не входят в гарантию.
+                    </div>
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-question">Как происходит доставка в другие города?</button>
+                <div class="faq-answer">
+                    <div class="faq-answer-content">
+                        Доставляем до терминала транспортной компании в Красноярске (2000 ₽). Далее по тарифам ТК. Упаковка в жесткий каркас из дерева — включена в стоимость.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contacts Section -->
+    <section class="contacts-section" id="contacts">
+        <h2 class="section-title">Контакты</h2>
+        <div class="contacts-grid">
+            <div class="contact-info">
+                <h3>Свяжитесь с нами</h3>
+                <div class="contact-item">
+                    <strong>Телефон</strong>
+                    <a href="tel:+79837004929">+7 (983) 700-49-29</a>
+                </div>
+                <div class="contact-item">
+                    <strong>WhatsApp / Telegram</strong>
+                    <a href="https://wa.me/79029786302">+7 (902) 978-63-02</a>
+                </div>
+                <div class="contact-item">
+                    <strong>Email</strong>
+                    <a href="mailto:kafel.granit@mail.ru">kafel.granit@mail.ru</a>
+                </div>
+                <div class="contact-item">
+                    <strong>Адрес производства</strong>
+                    <span>г. Красноярск, ул. 26 Бакинских Комиссаров, 8 стр. 81</span>
+                </div>
+                <div class="contact-item">
+                    <strong>Режим работы</strong>
+                    <span>Пн-Пт: 9:00 - 18:00<br>Сб: 10:00 - 15:00</span>
+                </div>
+                <div class="social-links">
+                    <a href="https://vk.com/kafelgranit124" class="social-link" target="_blank">VK</a>
+                    <a href="https://t.me/KafelGranit124" class="social-link" target="_blank">TG</a>
+                    <a href="https://yandex.ru/maps/org/kafelgranit124/187010131527/" class="social-link" target="_blank">🗺</a>
+                </div>
+            </div>
+            <div class="map-container">
+                <iframe src="https://yandex.ru/map-widget/v1/?z=16&ol=biz&oid=187010131527" frameborder="0"></iframe>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Контакты</h3>
+                <p>Телефон: <a href="tel:+79837004929">+7 (983) 700-49-29</a></p>
+                <p>WhatsApp/Telegram: <a href="https://wa.me/79029786302">+7 (902) 978-63-02</a></p>
+                <p>Email: <a href="mailto:kafel.granit@mail.ru">kafel.granit@mail.ru</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Адрес</h3>
+                <p>г. Красноярск</p>
+                <p>ул. 26 Бакинских Комиссаров, 8 стр. 81</p>
+                <p><a href="https://кафельгранит124.рф/" target="_blank">кафельгранит124.рф</a></p>
+            </div>
+            <div class="footer-section">
+                <h3>Доставка</h3>
+                <p>По Красноярску: 3 500 ₽</p>
+                <p>В другие регионы: 2 000 ₽ (до ТК)</p>
+                <p>Бесплатно при заказе от 5 шт.</p>
+                <p>Самовывоз: бесплатно</p>
+            </div>
+            <div class="footer-section">
+                <h3>Гарантия</h3>
+                <p>Срок производства: 2-3 недели</p>
+                <p>Гарантия на конструкцию и покрытие: 24 месяца</p>
+                <p>Доставка по всей России</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2024 Bellezza Tech. Все права защищены.</p>
+        </div>
+    </footer>
+
+    <!-- Cart Modal -->
+    <div class="modal-overlay" id="cartModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Корзина</h2>
+                <button class="modal-close" id="closeCart">&times;</button>
+            </div>
+            <div class="modal-body" id="cartBody">
+                <!-- Cart content will be inserted by JS -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="notification" id="notification">
+        Товар добавлен в корзину
+    </div>
+
+    <script>
+        // ==================== FIREBASE CONFIG ====================
+        const firebaseConfig = {
+            apiKey: "AIzaSyAgTMkc_mleBTpEEgLXF8bk5mgzEFwjL1E",
+            authDomain: "bellezza-tech.firebaseapp.com",
+            databaseURL: "https://bellezza-tech-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "bellezza-tech",
+            storageBucket: "bellezza-tech.firebasestorage.app",
+            messagingSenderId: "16720220751",
+            appId: "1:16720220751:web:9766065a3002b0287f903a"
+        };
+
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
+
+        // ==================== TELEGRAM BOT CONFIG ====================
+        const TELEGRAM_BOT_TOKEN = '7523948551:AAFfc6JnO0CExyA0D-6PDxZU8Dej3lr1hqk';
+        const TELEGRAM_CHAT_ID = '1243747235';
+
+        // ==================== DATA ====================
+        const textures = [
+            { id: 'columbia', name: 'Columbia Emerald', image: 'https://delfone.ru/image/C/COLUMBIA-EMERALD--Treasure_18023_6_7.jpg' },
+            { id: 'pandora', name: 'Pandora', image: 'https://delfone.ru/image/P/PANDORA--Treasure_18035_6_7.jpg' },
+            { id: 'ambilight', name: 'Ambilight', image: 'https://delfone.ru/image/A/AMBILIGHT--Treasure_18098_6_7.jpg' },
+            { id: 'versace', name: 'Versace Senior Black', image: 'https://delfone.ru/image/V/VERSACE-SENIOR-BLACK--Treasure_18083_6_7.jpg' },
+            { id: 'ararat', name: 'Ararat Lightning', image: 'https://delfone.ru/image/A/ARARAT-LIGHTNING--Classic-Marble_17918_6_7.jpg' },
+            { id: 'gilt', name: 'Gilt Years', image: 'https://delfone.ru/image/G/GILT-YEARS--Classic-Marble_17927_6_7.jpg' },
+            { id: 'hermes', name: 'Hermes Golden Rimmed White', image: 'https://delfone.ru/image/H/HERMES-GOLDEN-RIMMED-WHITE--Classic-Marble_17938_6_7.jpg' },
+            { id: 'saint-blanc', name: 'Saint Blanc Calacatta', image: 'https://delfone.ru/image/S/SAINT-BLANC-CALACATTA--Classic-Marble_18352_6_7.jpg' },
+            { id: 'calacatta', name: 'Calacatta', image: 'https://delfone.ru/image/C/CALACATTA--Classic-Marble_18423_6_7.jpg' },
+            { id: 'roman-niello', name: 'Roman Niello', image: 'https://delfone.ru/image/R/ROMAN-NIELLO--Classic-Marble_18409_6_7.jpg' },
+            { id: 'slateblue', name: 'Slateblue', image: 'https://delfone.ru/image/S/SLATEBLUE--Classic-Marble_18491_6_7.jpg' },
+            { id: 'bulgari', name: 'Bulgari Purple', image: 'https://delfone.ru/image/B/BULGARI-PURPLE--Classic-Marble_18990_6_7.jpg' },
+            { id: 'seville', name: 'Seville', image: 'https://delfone.ru/image/S/SEVILLE--Classic-Marble_19093_6_7.jpg' },
+            { id: 'shakespeare', name: 'Shakespeare Thin Line', image: 'https://delfone.ru/image/S/SHAKESPEARE-THIN-LINE--Classic-Marble_19105_6_7.jpg' },
+            { id: 'bosnia', name: 'Bosnia Grey', image: 'https://delfone.ru/image/B/BOSNIA-GREY--Classic-Marble_18480_6_7.jpg' },
+            { id: 'straight-grain', name: 'Straight Grain Ebony', image: 'https://delfone.ru/image/S/STRAIGHT-GRAIN-EBONY--Luxury-Wood_18019_6_7.jpg' },
+            { id: 'italian-walnut', name: 'Italian Black Walnut', image: 'https://delfone.ru/image/I/ITALIAN-BLACK-WALNUT--Luxury-Wood_18015_6_7.jpg' },
+            { id: 'oak-grey', name: 'Oak Dark Grey', image: 'https://delfone.ru/image/O/OAK-DARK-GREY--Luxury-Wood_19085_6_7.jpg' },
+            { id: 'louvre', name: 'Louvre', image: 'https://delfone.ru/image/L/LOUVRE--Classic-Marble_19057_6_7.jpg' }
+        ];
+
+        const products = [
+            {
+                id: 'monro',
+                number: '01',
+                name: 'MONRO',
+                subtitle: 'Радиальная гармония для камерных пространств',
+                image: 'https://ibb.co/MkF55bJ4',
+                base: 'МДФ окрашенный',
+                sizes: [
+                    { name: 'D 800×750', retail: 119000, b2b: 83000, bulk: 70000 },
+                    { name: 'D 1000×750', retail: 120000, b2b: 86000, bulk: 72000 }
+                ]
+            },
+            {
+                id: 'marble',
+                number: '02',
+                name: 'MARBLE',
+                subtitle: 'Величие форм и материалов',
+                image: 'https://ibb.co/6J7wRFK1',
+                base: 'Металл 6 мм / МДФ окрашенный',
+                sizes: [
+                    { name: '1600×800×750', retail: 130500, b2b: 85000, bulk: 77400 },
+                    { name: '2000×950×750', retail: 160000, b2b: 113000, bulk: 98000 }
+                ]
+            },
+            {
+                id: 'bend',
+                number: '03',
+                name: 'BEND',
+                subtitle: 'Плавные изгибы прочности',
+                image: 'https://ibb.co/WWZS2Ns0',
+                base: 'Металл 6 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'aria',
+                number: '04',
+                name: 'ARIA',
+                subtitle: 'Воздушная легкость закаленного стекла',
+                image: 'https://ibb.co/C3DZnVCw',
+                base: 'Металл 6 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'verona',
+                number: '05',
+                name: 'VERONA',
+                subtitle: 'Классическая итальянская роскошь',
+                image: 'https://ibb.co/cVSKynV',
+                base: 'Металл 6 мм / МДФ окрашенный',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'table-thrim',
+                number: '06',
+                name: 'TABLE THRIM',
+                subtitle: 'Минимализм, проверенный временем',
+                image: 'https://ibb.co/VcPdJmhb',
+                base: 'Металл 6 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'vanity',
+                number: '07',
+                name: 'VANITY',
+                subtitle: 'Строгая геометрия металла и камня',
+                image: 'https://ibb.co/ccS6M9LX',
+                base: 'Металл 6 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'katana',
+                number: '08',
+                name: 'KATANA',
+                subtitle: 'Японская точность в каждой линии',
+                image: 'https://ibb.co/8LGKTWQc',
+                base: 'Металл 40×80 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 94000, b2b: 66000, bulk: 56000 },
+                    { name: '2000×950×750', retail: 140000, b2b: 99000, bulk: 85000 }
+                ]
+            },
+            {
+                id: 'magnificence',
+                number: '09',
+                name: 'MAGNIFICENCE',
+                subtitle: 'Величие форм и материалов',
+                image: 'https://ibb.co/NdjgNDc6',
+                base: 'Металл 6 мм / МДФ окрашенный',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'elegant',
+                number: '10',
+                name: 'ЭЛЕГАНТ',
+                subtitle: 'Сдержанная роскошь современности',
+                image: 'https://ibb.co/zTxs1p0j',
+                base: 'Металл 6 мм / МДФ окрашенный',
+                sizes: [
+                    { name: '1600×800×750', retail: 117000, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 160000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'barry',
+                number: '11',
+                name: 'BARRY',
+                subtitle: 'Динамичный дизайн с характером',
+                image: 'https://ibb.co/G3JqXXZ1',
+                base: 'Металл 6 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 110500, b2b: 78000, bulk: 66400 },
+                    { name: '2000×950×750', retail: 150000, b2b: 103000, bulk: 89000 }
+                ]
+            },
+            {
+                id: 'grace',
+                number: '12',
+                name: 'GRACE',
+                subtitle: 'Органичные формы в современной интерпретации',
+                image: 'https://ibb.co/pB0w6zbT',
+                base: 'МДФ окрашенный',
+                sizes: [
+                    { name: '1400×800×750', retail: 150000, b2b: 107000, bulk: 92000 },
+                    { name: '1600×950×750', retail: 155000, b2b: 111000, bulk: 95000 }
+                ]
+            },
+            {
+                id: 'bonaldo',
+                number: '13',
+                name: 'BONALDO',
+                subtitle: 'Итальянская элеганс в российском исполнении',
+                image: 'https://ibb.co/rRtxnfrj',
+                base: 'Металл 6 мм',
+                sizes: [
+                    { name: '1600×800×750', retail: 94000, b2b: 66000, bulk: 56000 },
+                    { name: '2000×950×750', retail: 140000, b2b: 99000, bulk: 85000 }
+                ]
+            }
+        ];
+
+        const levels = {
+            standard: { name: 'STANDARD', multiplier: 1, description: 'Керамогранит 6/3 мм + МДФ подложка' },
+            premium: { name: 'PREMIUM', multiplier: 1.175, description: 'Фрезеровка МДФ или монолит 12 мм (+15-20%)' },
+            ultimate: { name: 'ULTIMATE', multiplier: 1.275, description: '10 мм каленого стекла + керамика (+25-30%)' }
+        };
+
+        // State
+        let cart = JSON.parse(localStorage.getItem('bellezza_cart')) || [];
+        let isB2B = localStorage.getItem('bellezza_b2b') === 'true';
+        let selectedOptions = {};
+        let currentDelivery = 'courier';
+
+        // DOM Elements
+        const cartBtn = document.getElementById('cartBtn');
+        const cartModal = document.getElementById('cartModal');
+        const closeCart = document.getElementById('closeCart');
+        const cartBody = document.getElementById('cartBody');
+        const cartCount = document.getElementById('cartCount');
+        const b2bToggle = document.getElementById('b2bToggle');
+        const notification = document.getElementById('notification');
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            renderTextures();
+            renderProducts();
+            updateCartUI();
+            initFAQ();
+            
+            if (isB2B) {
+                document.body.classList.add('b2b-mode');
+                b2bToggle.classList.add('active');
+            }
+        });
+
+        // FAQ Accordion
+        function initFAQ() {
+            const faqItems = document.querySelectorAll('.faq-item');
+            faqItems.forEach(item => {
+                const question = item.querySelector('.faq-question');
+                question.addEventListener('click', () => {
+                    const isActive = item.classList.contains('active');
+                    // Close all
+                    faqItems.forEach(i => i.classList.remove('active'));
+                    // Open clicked if wasn't active
+                    if (!isActive) {
+                        item.classList.add('active');
+                    }
+                });
+            });
+        }
+
+        // Render Textures
+        function renderTextures() {
+            const grid = document.getElementById('texturesGrid');
+            grid.innerHTML = textures.map(t => `
+                <div class="texture-card" onclick="selectTexture('${t.id}')">
+                    <img src="${t.image}" alt="${t.name}" loading="lazy">
+                    <div class="texture-overlay">
+                        <div class="texture-name">${t.name}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Render Products
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = products.map(p => {
+                selectedOptions[p.id] = selectedOptions[p.id] || {
+                    size: 0,
+                    level: 'standard',
+                    texture: textures[0].id
+                };
+                const opts = selectedOptions[p.id];
+                const price = calculatePrice(p, opts);
+                
+                return `
+                <div class="product-card" data-product="${p.id}">
+                    <img src="${p.image}" alt="${p.name}" class="product-image" loading="lazy">
+                    <div class="product-info">
+                        <div class="product-header">
+                            <div>
+                                <h3 class="product-title">${p.name}</h3>
+                                <p class="product-subtitle">${p.subtitle}</p>
+                            </div>
+                            <span class="product-number">${p.number}</span>
+                        </div>
+                        
+                        <div class="product-specs">
+                            <div class="spec-item">
+                                <span class="spec-label">Основание</span>
+                                <span class="spec-value">${p.base}</span>
+                            </div>
+                            <div class="spec-item">
+                                <span class="spec-label">Статус</span>
+                                <span class="spec-value">Под заказ 2-3 недели</span>
+                            </div>
+                        </div>
+
+                        <div class="product-options">
+                            <div class="option-group">
+                                <label class="option-label">Размер</label>
+                                <div class="option-buttons">
+                                    ${p.sizes.map((s, i) => `
+                                        <button class="option-btn ${opts.size === i ? 'active' : ''}" 
+                                                onclick="selectSize('${p.id}', ${i})">
+                                            ${s.name}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="option-group">
+                                <label class="option-label">Уровень исполнения</label>
+                                <div class="option-buttons">
+                                    ${Object.entries(levels).map(([key, l]) => `
+                                        <button class="option-btn ${opts.level === key ? 'active' : ''}" 
+                                                onclick="selectLevel('${p.id}', '${key}')"
+                                                title="${l.description}">
+                                            ${l.name}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+
+                            <div class="option-group">
+                                <label class="option-label">Текстура камня</label>
+                                <div class="option-buttons">
+                                    ${textures.slice(0, 6).map(t => `
+                                        <button class="option-btn ${opts.texture === t.id ? 'active' : ''}" 
+                                                onclick="selectProductTexture('${p.id}', '${t.id}')"
+                                                title="${t.name}">
+                                            ${t.name.split(' ')[0]}
+                                        </button>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="price-display">
+                            <span class="price-current" id="price-${p.id}">${price.toLocaleString()} ₽</span>
+                            ${opts.level !== 'standard' ? `<span class="price-original">${p.sizes[opts.size].retail.toLocaleString()} ₽</span>` : ''}
+                        </div>
+                        <div class="price-b2b">
+                            B2B: ${p.sizes[opts.size].b2b.toLocaleString()} ₽ | Опт от 5 шт: ${p.sizes[opts.size].bulk.toLocaleString()} ₽
+                        </div>
+
+                        <button class="add-to-cart-btn" onclick="addToCart('${p.id}')">
+                            Добавить в корзину
+                        </button>
+                    </div>
+                </div>
+            `}).join('');
+        }
+
+        // Calculate Price
+        function calculatePrice(product, options) {
+            const basePrice = isB2B ? product.sizes[options.size].b2b : product.sizes[options.size].retail;
+            return Math.round(basePrice * levels[options.level].multiplier);
+        }
+
+        // Select Options
+        function selectSize(productId, sizeIndex) {
+            selectedOptions[productId].size = sizeIndex;
+            updateProductCard(productId);
+        }
+
+        function selectLevel(productId, level) {
+            selectedOptions[productId].level = level;
+            updateProductCard(productId);
+        }
+
+        function selectProductTexture(productId, textureId) {
+            selectedOptions[productId].texture = textureId;
+            updateProductCard(productId);
+        }
+
+        function updateProductCard(productId) {
+            const p = products.find(x => x.id === productId);
+            const opts = selectedOptions[productId];
+            const price = calculatePrice(p, opts);
+            
+            document.getElementById(`price-${productId}`).textContent = price.toLocaleString() + ' ₽';
+                   document.getElementById(`price-${productId}`).textContent = price.toLocaleString() + ' ₽';
+            
+            const card = document.querySelector(`[data-product="${productId}"]`);
+            card.querySelectorAll('.option-btn').forEach(btn => btn.classList.remove('active'));
+            
+            const buttons = card.querySelectorAll('.option-buttons');
+            buttons[0].children[opts.size].classList.add('active');
+            buttons[1].children[Object.keys(levels).indexOf(opts.level)].classList.add('active');
+            buttons[2].children[textures.findIndex(t => t.id === opts.texture)].classList.add('active');
+        }
+
+        // Cart Functions
+        function addToCart(productId) {
+            const p = products.find(x => x.id === productId);
+            const opts = selectedOptions[productId];
+            const price = calculatePrice(p, opts);
+            
+            const item = {
+                id: Date.now(),
+                productId: p.id,
+                name: p.name,
+                image: p.image,
+                size: p.sizes[opts.size].name,
+                level: levels[opts.level].name,
+                texture: textures.find(t => t.id === opts.texture).name,
+                price: price,
+                quantity: 1
+            };
+
+            cart.push(item);
+            saveCart();
+            updateCartUI();
+            showNotification('Товар добавлен в корзину');
+        }
+
+        function removeFromCart(itemId) {
+            cart = cart.filter(item => item.id !== itemId);
+            saveCart();
+            updateCartUI();
+            renderCart();
+        }
+
+        function saveCart() {
+            localStorage.setItem('bellezza_cart', JSON.stringify(cart));
+        }
+
+        function updateCartUI() {
+            const count = cart.reduce((sum, item) => sum + item.quantity, 0);
+            cartCount.textContent = count;
+            cartCount.style.display = count > 0 ? 'flex' : 'none';
+        }
+
+        // Render Cart
+        function renderCart() {
+            if (cart.length === 0) {
+                cartBody.innerHTML = '<p style="text-align: center; color: var(--text-secondary); padding: 2rem;">Корзина пуста</p>';
+                return;
+            }
+
+            const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const deliveryCost = calculateDelivery();
+            const finalTotal = total + deliveryCost;
+
+            cartBody.innerHTML = `
+                <div class="cart-items">
+                    ${cart.map(item => `
+                        <div class="cart-item">
+                            <img src="${item.image}" alt="${item.name}" class="cart-item-image">
+                            <div class="cart-item-info">
+                                <div class="cart-item-title">${item.name}</div>
+                                <div class="cart-item-options">
+                                    ${item.size} • ${item.level} • ${item.texture}
+                                </div>
+                                <div class="cart-item-price">${item.price.toLocaleString()} ₽</div>
+                            </div>
+                            <button class="cart-item-remove" onclick="removeFromCart(${item.id})">×</button>
+                        </div>
+                    `).join('')}
+                </div>
+
+                <div class="cart-summary">
+                    <div class="summary-row">
+                        <span>Товары:</span>
+                        <span>${total.toLocaleString()} ₽</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Доставка:</span>
+                        <span>${deliveryCost === 0 ? 'Бесплатно' : deliveryCost.toLocaleString() + ' ₽'}</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Итого:</span>
+                        <span>${finalTotal.toLocaleString()} ₽</span>
+                    </div>
+                </div>
+
+                <div class="checkout-form" id="checkoutForm">
+                    <h3 style="margin: 1.5rem 0 1rem; font-size: 1.125rem;">Оформление заказа</h3>
+                    
+                    <div class="form-group">
+                        <label class="form-label">Способ получения</label>
+                        <div class="delivery-options">
+                            <div class="delivery-option ${currentDelivery === 'courier' ? 'active' : ''}" onclick="selectDelivery('courier')" id="deliveryCourier">
+                                <div class="delivery-option-title">Доставка</div>
+                                <div class="delivery-option-price" id="courierPrice">${calculateDelivery() === 0 ? 'Бесплатно' : '3 500 ₽'}</div>
+                            </div>
+                            <div class="delivery-option ${currentDelivery === 'pickup' ? 'active' : ''}" onclick="selectDelivery('pickup')" id="deliveryPickup">
+                                <div class="delivery-option-title">Самовывоз</div>
+                                <div class="delivery-option-price">Бесплатно</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Имя *</label>
+                            <input type="text" class="form-input" id="customerName" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Телефон *</label>
+                            <input type="tel" class="form-input" id="customerPhone" required placeholder="+7 (___) ___-__-__">
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="addressGroup" style="${currentDelivery === 'pickup' ? 'display:none' : ''}">
+                        <label class="form-label">Адрес доставки *</label>
+                        <input type="text" class="form-input" id="customerAddress" ${currentDelivery === 'pickup' ? '' : 'required'}>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Комментарий</label>
+                        <textarea class="form-input" id="customerComment" rows="3"></textarea>
+                    </div>
+
+                    <button class="submit-order-btn" id="submitBtn" onclick="submitOrder()">
+                        Отправить заказ
+                    </button>
+                </div>
+
+                <button class="checkout-btn" id="checkoutBtn" onclick="showCheckout()">
+                    Оформить заказ
+                </button>
+            `;
+        }
+
+        function calculateDelivery() {
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            if (totalItems >= 5) return 0;
+            if (currentDelivery === 'pickup') return 0;
+            return 3500;
+        }
+
+        function selectDelivery(type) {
+            currentDelivery = type;
+            document.querySelectorAll('.delivery-option').forEach(el => el.classList.remove('active'));
+            document.getElementById(type === 'courier' ? 'deliveryCourier' : 'deliveryPickup').classList.add('active');
+            
+            const addressGroup = document.getElementById('addressGroup');
+            const addressInput = document.getElementById('customerAddress');
+            
+            if (type === 'pickup') {
+                addressGroup.style.display = 'none';
+                if (addressInput) {
+                    addressInput.required = false;
+                    addressInput.value = 'Самовывоз: Красноярск, 26 Бакинских Комиссаров, 8 стр. 81';
+                }
+            } else {
+                addressGroup.style.display = 'block';
+                if (addressInput) {
+                    addressInput.required = true;
+                    addressInput.value = '';
+                }
+            }
+            
+            const deliveryCost = calculateDelivery();
+            const courierPriceEl = document.getElementById('courierPrice');
+            if (courierPriceEl) {
+                courierPriceEl.textContent = deliveryCost === 0 ? 'Бесплатно' : '3 500 ₽';
+            }
+            
+            renderCart();
+        }
+
+        function showCheckout() {
+            document.getElementById('checkoutForm').classList.add('active');
+            document.getElementById('checkoutBtn').style.display = 'none';
+        }
+
+        // Submit Order to Firebase + Telegram
+        async function submitOrder() {
+            const name = document.getElementById('customerName').value.trim();
+            const phone = document.getElementById('customerPhone').value.trim();
+            const address = document.getElementById('customerAddress').value.trim();
+            const comment = document.getElementById('customerComment').value.trim();
+
+            if (!name || !phone || !address) {
+                showNotification('Пожалуйста, заполните обязательные поля', true);
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="loading"></span> Отправка...';
+
+            const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+            const subtotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
+            const deliveryCost = calculateDelivery();
+            const finalTotal = subtotal + deliveryCost;
+
+            const orderData = {
+                customer: { name, phone, address, comment },
+                items: cart,
+                subtotal: subtotal,
+                delivery: {
+                    type: currentDelivery,
+                    cost: deliveryCost,
+                    address: currentDelivery === 'pickup' ? 'Самовывоз' : address
+                },
+                total: finalTotal,
+                date: new Date().toISOString(),
+                status: 'new',
+                isB2B: isB2B
+            };
+
+            try {
+                // 1. Save to Firebase
+                const newOrderRef = database.ref('orders').push();
+                await newOrderRef.set(orderData);
+                const orderId = newOrderRef.key;
+
+                // 2. Send to Telegram
+                await sendToTelegram(orderData, orderId);
+
+                showNotification('Заказ успешно отправлен! Номер: ' + orderId.slice(-6));
+                
+                // Clear cart
+                cart = [];
+                saveCart();
+                updateCartUI();
+                cartModal.classList.remove('active');
+                
+            } catch (error) {
+                console.error('Error:', error);
+                showNotification('Ошибка при отправке заказа. Попробуйте позже.', true);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Отправить заказ';
+            }
+        }
+
+        // Send order to Telegram Bot
+        async function sendToTelegram(orderData, orderId) {
+            const itemsText = orderData.items.map(item => 
+                `• ${item.name}\n  ${item.size} | ${item.level} | ${item.texture}\n  ${item.price.toLocaleString()} ₽`
+            ).join('\n\n');
+
+            const deliveryText = orderData.delivery.type === 'pickup' 
+                ? '🏪 Самовывоз (бесплатно)'
+                : `🚚 Доставка: ${orderData.delivery.cost.toLocaleString()} ₽`;
+
+            const message = `
+🛒 <b>НОВЫЙ ЗАКАЗ #${orderId.slice(-6).toUpperCase()}</b>
+
+👤 <b>Клиент:</b> ${orderData.customer.name}
+📞 <b>Телефон:</b> ${orderData.customer.phone}
+📍 <b>Адрес:</b> ${orderData.delivery.address}
+
+📦 <b>Товары:</b>
+${itemsText}
+
+${deliveryText}
+💰 <b>Итого:</b> ${orderData.total.toLocaleString()} ₽
+${orderData.isB2B ? '\n🏢 <b>B2B заказ</b>' : ''}
+${orderData.customer.comment ? '\n💬 <b>Комментарий:</b> ' + orderData.customer.comment : ''}
+
+🕐 ${new Date().toLocaleString('ru-RU')}
+            `.trim();
+
+            const url = `https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage`;
+            
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: TELEGRAM_CHAT_ID,
+                    text: message,
+                    parse_mode: 'HTML'
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error('Telegram API error');
+            }
+        }
+
+        // B2B Toggle
+        b2bToggle.addEventListener('click', () => {
+            isB2B = !isB2B;
+            localStorage.setItem('bellezza_b2b', isB2B);
+            document.body.classList.toggle('b2b-mode');
+            b2bToggle.classList.toggle('active');
+            renderProducts();
+        });
+
+        // Cart Modal
+        cartBtn.addEventListener('click', () => {
+            renderCart();
+            cartModal.classList.add('active');
+        });
+
+        closeCart.addEventListener('click', () => {
+            cartModal.classList.remove('active');
+        });
+
+        cartModal.addEventListener('click', (e) => {
+            if (e.target === cartModal) cartModal.classList.remove('active');
+        });
+
+        // Notification
+        function showNotification(message, isError = false) {
+            notification.textContent = message;
+            notification.className = 'notification' + (isError ? ' error' : '');
+            notification.classList.add('show');
+            setTimeout(() => notification.classList.remove('show'), 3000);
+        }
+
+        // Texture selection (scroll to products)
+        function selectTexture(textureId) {
+            document.getElementById('products').scrollIntoView({ behavior: 'smooth' });
+            showNotification(`Выбрана текстура: ${textures.find(t => t.id === textureId).name}`);
+        }
+
+        // Close modal on Escape
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                cartModal.classList.remove('active');
+            }
+        });
+    </script>
+
+</body>
+</html>
